@@ -3,8 +3,13 @@ package geoserver.client;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import org.apache.commons.httpclient.NameValuePair;
 
 import it.geosolutions.geoserver.rest.GeoServerRESTPublisher;
+import it.geosolutions.geoserver.rest.GeoServerRESTPublisher.UploadMethod;
 import it.geosolutions.geoserver.rest.GeoServerRESTReader;
 
 /*
@@ -17,7 +22,8 @@ import it.geosolutions.geoserver.rest.GeoServerRESTReader;
  * 4. Publish layer 
  */
 public class Geoclient {
-  private final String RESTURL  = "http://localhost:8080/geoserver";
+  //private final String RESTURL  = "http://localhost:8080/geoserver";
+  private final String RESTURL  = "http://199.26.254.146:8080/geoserver";
   private final String RESTUSER = "admin";
   private final String RESTPW   = "geoserver";
   
@@ -43,25 +49,30 @@ public class Geoclient {
  * http://localhost:8080/geoserver/javatest/wms?service=WMS&version=1.1.0&request=GetMap&layers=javatest:nyc_roads&styles=&bbox=984018.1663741902,207673.09513056703,991906.4970533887,219622.53973435296&width=506&height=768&srs=EPSG:2908&format=application/openlayers  
  */
   public boolean publishShapefile(String workspace_name, String data_store_name, String datasetname, 
-      String data_path, String proj)
+      String remote_data_path, String proj)
   {
-     File zipFile = new File(data_path);
-     try {
-      return publisher.publishShp(workspace_name, data_store_name, datasetname, zipFile, proj);
-    } catch (FileNotFoundException e) {
+     //File zipFile = new File(data_path);
+    URI uri;
+    try {
+      uri = new URI(remote_data_path);
+      return publisher.publishShp(workspace_name, data_store_name, new NameValuePair[0], datasetname,
+          UploadMethod.EXTERNAL, uri, proj, null);
+    } catch (Exception e) {
       e.printStackTrace();
     }
+
     return false;
   }
   
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws URISyntaxException {
     Geoclient client = new Geoclient();
-    //client.createWorkspace("javatest");
-    client.publishShapefile("javatest", "myStore", "nyc_roads", "/Users/yjiang/Downloads/nyc_roads.zip", "EPSG:2908");
-//    File zipFile = new File("/Users/yjiang/Downloads/nyc_roads.zip");
-//    try {
-//      boolean published = client.publisher.publishShp("javatest", "myStore", "nyc_roads", zipFile, "EPSG:2908");
+    //System.out.println(client.createWorkspace("yun"));
+    System.out.println(client.publishShapefile("yun", "yuntest", "nyc_roads", "file:////usr/share/geoserver/data_dir/data/nyc_roads/nyc_roads.shp", "EPSG:2908"));
+    //File zipFile = new File("/Users/yjiang/Downloads/nyc_roads.zip");
+//    URI uri = new URI("file:///home/data/nyc_roads/nyc_roads.shp");
+//    try { 
+//      boolean published = client.publisher.publishShpCollection("javatest", "myStore", uri);
 //      System.out.println(published);
 //    } catch (FileNotFoundException e) {
 //      // TODO Auto-generated catch block
